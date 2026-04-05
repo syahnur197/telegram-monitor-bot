@@ -1,6 +1,5 @@
 import logging
 from urllib.parse import urlparse
-import ipaddress
 
 from telegram import Update
 from telegram.constants import ParseMode
@@ -27,26 +26,7 @@ def is_allowed(user_id: int) -> bool:
     return user_id in Config.ALLOWED_USER_IDS
 
 
-def _is_private_or_local_host(hostname: str) -> bool:
-    lowered = hostname.lower()
-
-    if lowered in {"localhost", "127.0.0.1", "::1"}:
-        return True
-
-    try:
-        ip = ipaddress.ip_address(lowered)
-        return (
-            ip.is_private
-            or ip.is_loopback
-            or ip.is_link_local
-            or ip.is_reserved
-            or ip.is_multicast
-        )
-    except ValueError:
-        return False
-
-
-def _is_valid_public_url(url: str) -> bool:
+def _is_valid_url(url: str) -> bool:
     try:
         parsed = urlparse(url.strip())
     except Exception:
@@ -58,11 +38,7 @@ def _is_valid_public_url(url: str) -> bool:
     if not parsed.netloc:
         return False
 
-    hostname = parsed.hostname
-    if not hostname:
-        return False
-
-    if _is_private_or_local_host(hostname):
+    if not parsed.hostname:
         return False
 
     return True
@@ -153,11 +129,8 @@ async def receive_url(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int
 
     url = message.text.strip()
 
-    if not _is_valid_public_url(url):
-        await message.reply_text(
-            "Please provide a valid public http:// or https:// URL.\n"
-            "Local/private addresses are not allowed."
-        )
+    if not _is_valid_url(url):
+        await message.reply_text("Please provide a valid http:// or https:// URL.")
         return URL
 
     try:

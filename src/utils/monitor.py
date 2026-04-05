@@ -10,6 +10,7 @@ from src.config import Config
 
 logger = logging.getLogger(__name__)
 
+
 async def check_service(session: AsyncSession, service: Service, bot) -> None:
     try:
         async with httpx.AsyncClient(timeout=60.0) as client:
@@ -38,40 +39,53 @@ async def check_service(session: AsyncSession, service: Service, bot) -> None:
             logger.info(f"First check: service '{service.name}' is DOWN")
         return
 
+    # Transition: up → down
     if service.is_up and not is_now_up:
         service.is_up = False
         service.first_down_at = now
+        service.down_alerted_at = None
         service.last_checked_at = now
         await session.commit()
         logger.info(f"Service '{service.name}' ({service.url}) is DOWN")
         return
 
-    if not service.is_up and is_now_up:
-        service.is_up = True
-        service.first_down_at = None
-        service.last_checked_at = now
-        await session.commit()
-        await _notify_all_users(
-            bot,
-            f"✅ *Service Restored*: {service.name}\n{service.url} is back up and running!",
-        )
-        logger.info(f"Service '{service.name}' is UP again")
-        return
-
+    # Already down, still down
     if not service.is_up and not is_now_up:
         service.last_checked_at = now
-        if service.first_down_at and (now - service.first_down_at) >= timedelta(
-            seconds=Config.ALERT_AFTER_SECONDS
+
+        if (
+            service.first_down_at
+            and (now - service.first_down_at) >= timedelta(seconds=Config.ALERT_AFTER_SECONDS)
+            and service.down_alerted_at is None
         ):
             await _notify_all_users(
                 bot,
                 f"🚨 *Service Down*: {service.name}\n{service.url} has been down for 10+ minutes!",
             )
-            service.first_down_at = now  # or better: use last_alerted_at
+            service.down_alerted_at = now
             logger.info(f"Alert sent for service '{service.name}'")
+
         await session.commit()
         return
 
+    # Transition: down → up
+    if not service.is_up and is_now_up:
+        service.is_up = True
+        service.first_down_at = None
+        service.last_checked_at = now
+
+        if service.down_alerted_at is not None:
+            await _notify_all_users(
+                bot,
+                f"✅ *Service Restored*: {service.name}\n{service.url} is back up and running!",
+            )
+            logger.info(f"Service '{service.name}' is UP again")
+
+        service.down_alerted_at = None
+        await session.commit()
+        return
+
+    # Already up, still up
     service.last_checked_at = now
     await session.commit()
 

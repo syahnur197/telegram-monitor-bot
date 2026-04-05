@@ -10,5 +10,5 @@ class Service(SQLModel, table=True):
     is_up: bool = True
     last_checked_at: Optional[datetime] = None
     first_down_at: Optional[datetime] = None
-    last_alerted_at: Optional[datetime] = None
+    down_alerted_at: Optional[datetime] = None  # set once the down alert is sent
     created_at: datetime = Field(default_factory=datetime.utcnow)

@@ -10,4 +10,5 @@ class Service(SQLModel, table=True):
     is_up: bool = True
     last_checked_at: Optional[datetime] = None
     first_down_at: Optional[datetime] = None
+    last_alerted_at: Optional[datetime] = None
     created_at: datetime = Field(default_factory=datetime.utcnow)

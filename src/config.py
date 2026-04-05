@@ -12,5 +12,5 @@ class Config:
         if uid.strip()
     ]
     DATABASE_URL = "sqlite+aiosqlite:///./monitor.db"
-    POLL_INTERVAL_SECONDS = 300  # 5 minutes
-    ALERT_AFTER_SECONDS = 600  # 10 minutes
+    POLL_INTERVAL_SECONDS = 30  # 30 seconds
+    ALERT_AFTER_SECONDS = 300  # 5 minutes

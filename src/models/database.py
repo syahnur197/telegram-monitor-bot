@@ -2,8 +2,8 @@ from sqlmodel import SQLModel, create_engine
 from sqlmodel.ext.asyncio.session import AsyncSession
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 
-from src.config import Config
-from src.models.service import Service
+from config import Config
+from models.service import Service
 
 
 engine = create_async_engine(Config.DATABASE_URL, echo=False)

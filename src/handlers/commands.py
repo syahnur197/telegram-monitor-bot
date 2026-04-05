@@ -9,9 +9,9 @@ from telegram.ext import (
 )
 from sqlmodel import select
 
-from src.models.database import async_session
-from src.models.service import Service
-from src.config import Config
+from models.database import async_session
+from models.service import Service
+from config import Config
 
 logger = logging.getLogger(__name__)
 

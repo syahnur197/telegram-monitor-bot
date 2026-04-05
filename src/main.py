@@ -3,15 +3,15 @@ import asyncio
 
 from telegram.ext import ApplicationBuilder, CommandHandler
 
-from src.config import Config
-from src.models.database import init_db
-from src.handlers.commands import (
+from config import Config
+from models.database import init_db
+from handlers.commands import (
     start,
     delete_service,
     list_services,
     get_add_conversation_handler,
 )
-from src.utils.monitor import poll_all_services
+from utils.monitor import poll_all_services
 
 logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",

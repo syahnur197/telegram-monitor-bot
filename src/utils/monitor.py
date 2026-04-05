@@ -5,8 +5,8 @@ from datetime import datetime, timedelta
 from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
-from src.models.service import Service
-from src.config import Config
+from models.service import Service
+from config import Config
 
 logger = logging.getLogger(__name__)
 
@@ -59,7 +59,7 @@ async def check_service(session: AsyncSession, service: Service, bot) -> None:
 
 
 async def _notify_all_users(bot, message: str) -> None:
-    from src.config import Config
+    from config import Config
 
     for user_id in Config.ALLOWED_USER_IDS:
         try:
@@ -69,7 +69,7 @@ async def _notify_all_users(bot, message: str) -> None:
 
 
 async def poll_all_services(bot) -> None:
-    from src.models.database import async_session
+    from models.database import async_session
 
     async with async_session() as session:
         result = await session.exec(select(Service))
